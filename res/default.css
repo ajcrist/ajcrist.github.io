@@ -1,0 +1,130 @@
+/* Copyright © 2022 Adam Crist. All rights reserved. */
+
+:root {
+	--color-light:      rgb(240, 240, 240);
+	--color-light-emph: rgb(255, 255, 255);
+	--color-dark:       rgb( 32,  33,  34);
+	--color-dark-emph:  rgb(  0,   0,   0);
+	--color-link:       rgb(  0,  56, 168);
+	
+	--color-bg0: var(--color-light);
+	--color-bg1: var(--color-light-emph);
+	--color-fg0: var(--color-dark);
+	--color-fg1: var(--color-dark-emph);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+	--color-light:      rgb(153, 153, 153);
+	--color-light-emph: rgb(204, 204, 204);
+	--color-dark:       rgb( 20,  20,  20);
+	--color-dark-emph:  rgb( 30,  30,  30);
+	--color-link:       rgb(255, 191,   0);
+	
+	--color-bg0: var(--color-dark);
+	--color-bg1: var(--color-dark-emph);
+	--color-fg0: var(--color-light);
+	--color-fg1: var(--color-light-emph);
+	}
+}
+
+@media print {
+	:root {
+	--color-light:      white;
+	--color-light-emph: white;
+	--color-dark:       black;
+	--color-dark-emph:  black;
+	--color-link:       blue;
+	
+	--color-bg0: var(--color-light);
+	--color-bg1: var(--color-light-emph);
+	--color-fg0: var(--color-dark);
+	--color-fg1: var(--color-dark-emph);
+	}
+}
+
+html {
+	font-family: "Noto Sans", sans-serif;
+	font-size: 10pt;
+	color: var(--color-fg0);
+	background-color: var(--color-bg0);
+}
+
+html, body {margin: 0;}
+
+* {
+	border-width: 1px;
+	border-color: rgba(128, 128, 128, 0.4);
+}
+
+article, header, footer {
+	margin: 0.5rem;
+	padding: 0.25em 0.5em;
+}
+
+article {
+	background: var(--color-bg1);
+	text-align: justify;
+}
+
+footer {
+	font-size: 8pt;
+	background: var(--color-bg0);
+	color: var(--color-fg0);
+	
+	border-top-style: solid;
+}
+
+a:link, a:visited {color: var(--color-link);}
+a:link:hover             {text-decoration: underline;}
+a:visited:hover          {text-decoration: underline dotted;}
+
+h1, h2, h3, h4, h5, h6 {
+	color: var(--color-fg1);
+	margin: 0.1em 0 0.8em 0;
+}
+
+header nav li {
+	font-size: 12pt;
+}
+
+p {
+	text-indent: 2ch;
+	margin: 0.5em 0 1.5em 0;
+	overflow-wrap: anywhere;
+}
+
+code, pre {
+	font-family: "Droid Sans Mono", monospace;
+	font-size: 9pt;
+	
+	background: var(--color-bg0);
+	border-style: solid;
+	padding: 0.25em;
+}
+
+code {white-space: pre-wrap;}
+
+pre {
+	max-width: 100%;
+	overflow: auto;
+}
+
+pre code {
+	white-space: pre;
+	background: transparent;
+	border-style: none;
+}
+
+pre code.hljs[class*=hljs] {padding: 0;}
+
+@media not print {
+	a:link {text-decoration: none;}
+	p {max-width: 55ch;}
+	pre {width: 80ch;}
+	article{
+		border-style: solid;
+		width: 72ch;
+		max-width: calc(100% - 2.1rem);
+	}
+}
