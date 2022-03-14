@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="referrer" content="origin-when-cross-origin" />
+	<meta name="robots" content="index, follow, noarchive, nosnippet, noimageindex" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="color-scheme" content="light dark" />
+	<meta name="theme-color" media="(prefers-color-scheme: light)" content="rgb(32, 33, 34)" />
+	<meta name="theme-color" media="(prefers-color-scheme: dark)"  content="rgb(20, 20, 20)" />
+	<title>Map Bearing Tool</title>
+	<meta name="author" content="Adam Crist" />
+	<link rel="stylesheet" href="/lib/leaflet/leaflet.css" />
+	<script src="/lib/leaflet/leaflet.js"></script>
+	<link rel="stylesheet" href="/res/default.css" />
+</head>
+<body>
+	<div id="map" style="width: 96vw; height: 86vh;"></div>
+	<div id="offsetDiv" style="display: none">
+		<label for="offset">Relative heading offset: </label>
+		<output id="offsetOut" for="offset"></output><br />
+		<input type="range" min=0 max=360 step=1 value=0 id="offset" style="width: 99%" />
+	</div>
+	<span style="font-size: 80%;">
+		<span id="warnNoPos">Warning: no position events have been received <br/></span>
+		<span id="warnNoOri">Warning: no orientation events have been received</span>
+	</span>
+	<script>
+	const map = L.map("map", {
+		center: [39.833333, -98.583333],
+		zoom: 4
+	});
+	
+	L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+	}).addTo(map);
+	</script>
+	<script>
+		var userPos = null;
+		const warnNoPos = document.getElementById("warnNoPos");
+		const warnNoOri = document.getElementById("warnNoOri");
+		const offsetEle = document.getElementById("offset");
+		const offsetOut = document.getElementById("offsetOut");
+		const offsetDiv = document.getElementById("offsetDiv");
+		
+		function rad(x) {return x / (180 / Math.PI);}
+		function deg(x) {return x * (180 / Math.PI);}
+		
+		function fromPoint(ll, bear, dist) {
+			const R = 6378.1; // Kilometers
+			const lat0=rad(ll.lat), lon0=rad(ll.lng);
+			bear = rad(bear);
+			
+			const lat1 = Math.asin(
+				Math.sin(lat0)*Math.cos(dist/R)+
+				Math.cos(lat0)*Math.sin(dist/R)*Math.cos(bear)
+			);
+			
+			const lon1 = lon0 + Math.atan2(
+				Math.sin(bear)*Math.sin(dist/R)*Math.cos(lat0),
+				Math.cos(dist/R)-Math.sin(lat0)*Math.sin(lat1)
+			);
+			
+			return L.latLng(deg(lat1), deg(lon1));
+		}
+		
+		function onUserPosUpdate() {
+			userPos.markerRadius.setLatLng(userPos.latLng);
+			userPos.markerRadius.setRadius(userPos.coords.accuracy);
+			
+			if (userPos.bearing !== null) {
+				userPos.line.setLatLngs([
+					userPos.latLng,
+					fromPoint(userPos.latLng, userPos.bearing, 100)
+				]);
+			}
+		}
+		
+		navigator.geolocation.watchPosition(function(e) {
+			warnNoPos.style.display = "none";
+			const c = e.coords;
+			const ll = L.latLng(c.latitude, c.longitude);
+			
+			if (userPos === null) {
+				map.setView(ll, 14);
+				
+				userPos = {};
+				userPos.bearing = null;
+				userPos.markerRadius = L.circle(ll, {radius: c.accuracy, stroke: false, fillOpacity: 0.5}).addTo(map);
+				userPos.line = L.polyline([ll], {opacity: 0.3}).addTo(map);
+			}
+			
+			userPos.latLng = L.latLng(e.coords.latitude, e.coords.longitude);
+			userPos.coords = e.coords;
+			onUserPosUpdate();
+		}, function(e) {console.error(e);}, {enableHighAccuracy: true,});
+		
+		function orientationListener(e) {
+			warnNoOri.style.display = "none";
+			if (userPos === null) {return;}
+			
+			var offset = 0;
+			if (!e.absolute) {
+				offset = parseFloat(offsetEle.value);
+				offsetOut.innerHTML = offset + " &deg;";
+				offsetDiv.style.display = "";
+			} else {
+				offset = 0;
+			}
+			
+			userPos.bearing = offset-e.alpha;
+			onUserPosUpdate();
+		}
+		
+		if ("ondeviceorientationabsolute" in window) {
+			window.addEventListener("ondeviceorientationabsolute", orientationListener);
+		} else {
+			window.addEventListener("deviceorientation", orientationListener);
+		}
+	</script>
+	<footer>Copyright © 2022 Adam Crist. All rights reserved.</footer>
+</body>
+</html>
