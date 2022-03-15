@@ -13,6 +13,14 @@
 	<link rel="stylesheet" href="/lib/leaflet/leaflet.css" />
 	<script src="/lib/leaflet/leaflet.js"></script>
 	<link rel="stylesheet" href="/res/default.css" />
+	<style>
+		.leaflet-button-custom {
+			background: #eee;
+			padding: 0.5em;
+			font-weight: bold;
+			user-select: none;
+		}
+	</style>
 </head>
 <body>
 	<div id="map" style="width: 96vw; height: 86vh;"></div>
@@ -21,10 +29,10 @@
 		<output id="offsetOut" for="offset"></output><br />
 		<input type="range" min=0 max=360 step=1 value=0 id="offset" style="width: 99%" />
 	</div>
-	<span style="font-size: 80%;">
-		<span id="warnNoPos">Warning: no position events have been received <br/></span>
+	<div style="font-size: 80%; font-weight: bold; margin: 3pt;">
+		<span id="warnNoPos">Warning: no position events have been received<br/></span>
 		<span id="warnNoOri">Warning: no orientation events have been received</span>
-	</span>
+	</div>
 	<script>
 	const map = L.map("map", {
 		center: [39.833333, -98.583333],
@@ -37,6 +45,7 @@
 	</script>
 	<script>
 		var userPos = null;
+		var shotLines = [];
 		const warnNoPos = document.getElementById("warnNoPos");
 		const warnNoOri = document.getElementById("warnNoOri");
 		const offsetEle = document.getElementById("offset");
@@ -45,6 +54,42 @@
 		
 		function rad(x) {return x / (180 / Math.PI);}
 		function deg(x) {return x * (180 / Math.PI);}
+		
+		L.Control.CustomButton = L.Control.extend({
+			options: {
+				position: "topright",
+				text: "Custom Button",
+				_onClick: function() {}
+			},
+			
+			onAdd: function(map) {
+				this._container = L.DomUtil.create("div", "leaflet-bar");
+				this._container.classList.add("leaflet-button-custom");
+				L.DomEvent.disableClickPropagation(this._container);
+				L.DomEvent.on(this._container, "click", this.options._onClick, this);
+				this._container.innerText = this.options.text;
+				return this._container;
+			},
+			onRemove: function() {
+				L.DomEvent.off(this._container, "click", this.options._onClick, this);
+			},
+		});
+		
+		new L.Control.CustomButton({text: "Shoot!", position: "bottomright", _onClick: function() {
+			if ((userPos === null) || (userPos.bearing === null)) {return;}
+			
+			const line = L.polyline([
+				userPos.latLng,
+				fromPoint(userPos.latLng, userPos.bearing, 100)
+			], {opacity: 0.5, weight: 1, color: "#000"}).addTo(map);
+			
+			shotLines.push(line);
+		}}).addTo(map);
+		new L.Control.CustomButton({text: "Unshoot", position: "bottomleft", _onClick: function() {
+			var line = shotLines.pop();
+			if (!line) {return;}
+			line.remove();
+		}}).addTo(map);
 		
 		function fromPoint(ll, bear, dist) {
 			const R = 6378.1; // Kilometers
@@ -86,8 +131,8 @@
 				
 				userPos = {};
 				userPos.bearing = null;
-				userPos.markerRadius = L.circle(ll, {radius: c.accuracy, stroke: false, fillOpacity: 0.5}).addTo(map);
-				userPos.line = L.polyline([ll], {opacity: 0.3}).addTo(map);
+				userPos.markerRadius = L.circle(ll, {radius: c.accuracy, stroke: false, fillOpacity: 0.5, fillColor: "#f00"}).addTo(map);
+				userPos.line = L.polyline([ll], {opacity: 0.3, color: "#f00"}).addTo(map);
 			}
 			
 			userPos.latLng = L.latLng(e.coords.latitude, e.coords.longitude);
