@@ -75,6 +75,13 @@
 			},
 		});
 		
+		function saveShotLines() {
+			localStorage.setItem("shotLines", JSON.stringify(shotLines.map(function(line) {
+				const latLngs = line.getLatLngs();
+				return latLngs.map(function(ll) {return [ll.lat, ll.lng];});
+			})));
+		}
+		
 		new L.Control.CustomButton({text: "Shoot!", position: "bottomright", _onClick: function() {
 			if ((userPos === null) || (userPos.bearing === null)) {return;}
 			
@@ -84,9 +91,12 @@
 			], {opacity: 0.5, weight: 1, color: "#000"}).addTo(map);
 			
 			shotLines.push(line);
+			saveShotLines();
 		}}).addTo(map);
 		new L.Control.CustomButton({text: "Unshoot", position: "bottomleft", _onClick: function() {
 			var line = shotLines.pop();
+			saveShotLines();
+			
 			if (!line) {return;}
 			line.remove();
 		}}).addTo(map);
@@ -131,7 +141,7 @@
 				
 				userPos = {};
 				userPos.bearing = null;
-				userPos.markerRadius = L.circle(ll, {radius: c.accuracy, stroke: false, fillOpacity: 0.5, fillColor: "#f00"}).addTo(map);
+				userPos.markerRadius = L.circle(ll, {radius: c.accuracy, stroke: false, fillOpacity: 0.3, fillColor: "#f00"}).addTo(map);
 				userPos.line = L.polyline([ll], {opacity: 0.3, color: "#f00"}).addTo(map);
 			}
 			
@@ -161,6 +171,14 @@
 			window.addEventListener("ondeviceorientationabsolute", orientationListener);
 		} else {
 			window.addEventListener("deviceorientation", orientationListener);
+		}
+		
+		var savedLines = localStorage.getItem("shotLines");
+		if (savedLines) {
+			JSON.parse(savedLines).forEach(function(savedLine) {
+				const line = L.polyline(savedLine, {opacity: 0.5, weight: 1, color: "#000"}).addTo(map);
+				shotLines.push(line);
+			})
 		}
 	</script>
 	<footer>Copyright © 2022 Adam Crist. All rights reserved.</footer>
