@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="referrer" content="origin-when-cross-origin" />
+	<meta name="robots" content="index, follow, noarchive, nosnippet, noimageindex" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="color-scheme" content="light dark" />
+	<meta name="theme-color" media="(prefers-color-scheme: light)" content="rgb(32, 33, 34)" />
+	<meta name="theme-color" media="(prefers-color-scheme: dark)"  content="rgb(20, 20, 20)" />
+	<title>Pay Clock</title>
+	<meta name="author" content="Adam Crist" />
+	<meta name="description" content="Real-time hourly pay calculator" />
+	<link rel="stylesheet" href="/res/default.css" />
+	<style>
+		#fedDoll, #locDoll, #grsDoll, #wkrDoll {font-size: 130%;}
+		.outCell {
+			font-size: 12pt;
+			padding-left: 1em;
+			font-variant-numeric: tabular-nums;
+		}
+	</style>
+</head>
+<body>
+	<article>
+		<table>
+			<tr><td>Gross</td>  <td class="outCell">$<output id="grsDoll">-</output>.<output id="grsCent">--</output></td></tr>
+			<tr><td>Net</td>    <td class="outCell">$<output id="wkrDoll">-</output>.<output id="wkrCent">--</output></td></tr>
+			<tr><td>Federal</td><td class="outCell">$<output id="fedDoll">-</output>.<output id="fedCent">--</output></td></tr>
+			<tr><td>Local</td>  <td class="outCell">$<output id="locDoll">-</output>.<output id="locCent">--</output></td></tr>
+			<tr><td>Hours</td>  <td class="outCell"><output id="hourOut"></output></td></tr>
+		</table>
+	</article>
+	<table id="rateTable" style="padding-top: 1ex;">
+		<tr><td><label for="payIn">Pay Rate</label>   </td><td><input id="payIn" type="number" value="10" min="7.25" step="0.01" />$/hr</td></tr>
+		<tr><td><label for="fedIn">Federal Tax</label></td><td><input id="fedIn" type="number" value="16.852" min="0" step="0.001" />%</td></tr>
+		<tr><td><label for="locIn">Local Tax</label>  </td><td><input id="locIn" type="number" value="2.706" min="0" step="0.001" />%</td></tr>
+		<tr><td><label for="t0In">Start Time</label>  </td><td><input id="t0In" type="time" step="60" /> <input id="restart" type="button" value="Now" /></td></tr>
+	</table>
+	<footer>Copyright © 2022 Adam Crist. All rights reserved.</footer>
+	<script>
+		function time() {return Date.now() / 1000;}
+		
+		function midnight() {
+			const today = new Date();
+			return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+		}
+		
+		function resetT0() {
+			t0 = time();
+			localStorage.setItem("payclock-t0", t0.toFixed(3));
+			t0In.valueAsDate = new Date((Math.trunc(t0/60)*60000) - ((new Date()).getTimezoneOffset()*60000));
+		}
+		
+		function dollarsOut(val, dollEle, centEle) {
+			const dolls = Math.trunc(val / 100);
+			const cents = Math.trunc((val * 10) - (dolls * 1000));
+			
+			dollEle.innerText = dolls.toString();
+			centEle.innerText = cents.toString().padStart(3, "0");
+		}
+		
+		function updateInputs() {
+			payRat = payIn.valueAsNumber * 100;
+			cutFed = fedIn.valueAsNumber / 100;
+			cutLoc = locIn.valueAsNumber / 100;
+			cutWkr = 1.0 - (cutFed + cutLoc);
+			t0 = (midnight().valueOf() + t0In.valueAsNumber) / 1000;
+			
+			localStorage.setItem("payclock-rat", payIn.valueAsNumber);
+			localStorage.setItem("payclock-fed", fedIn.valueAsNumber);
+			localStorage.setItem("payclock-loc", locIn.valueAsNumber);
+			localStorage.setItem("payclock-t0", t0.toFixed(3));
+		}
+		
+		function mainLoop() {
+			const dt = time() - t0;
+			const grs = dt * (payRat / 60 / 60);
+			const fed = grs * cutFed;
+			const loc = grs * cutLoc;
+			const wkr = grs * cutWkr;
+			
+			dollarsOut(grs, grsDoll, grsCent);
+			dollarsOut(fed, fedDoll, fedCent);
+			dollarsOut(loc, locDoll, locCent);
+			dollarsOut(wkr, wkrDoll, wkrCent);
+			hourOut.innerHTML = (dt / 60 / 60).toFixed(3);
+			document.title = `\$${(wkr/100).toFixed(2)} - Pay Clock`;
+			
+			requestAnimationFrame(mainLoop);
+		}
+	</script>
+	<script>
+		var t0 = localStorage.getItem("payclock-t0");
+		t0 = parseInt(t0 || time());
+		localStorage.setItem("payclock-t0", t0.toString());
+		t0In.valueAsDate = new Date((Math.trunc(t0/60)*60000) - ((new Date()).getTimezoneOffset()*60000));
+		
+		var payRat, cutFed, cutLoc, cutWkr;
+		payIn.valueAsNumber = localStorage.getItem("payclock-rat") || payIn.valueAsNumber;
+		fedIn.valueAsNumber = localStorage.getItem("payclock-fed") || fedIn.valueAsNumber;
+		locIn.valueAsNumber = localStorage.getItem("payclock-loc") || locIn.valueAsNumber;
+		updateInputs();
+		
+		rateTable.addEventListener("input", updateInputs);
+		rateTable.addEventListener("change", updateInputs);
+		restart.addEventListener("click", resetT0);
+		requestAnimationFrame(mainLoop);
+	</script>
+</body>
+</html>
