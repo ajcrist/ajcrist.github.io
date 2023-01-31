@@ -1,17 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8" />
-	<meta name="referrer" content="origin-when-cross-origin" />
-	<meta name="robots" content="index, follow, noarchive, nosnippet, noimageindex" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<meta name="color-scheme" content="light dark" />
-	<meta name="theme-color" media="(prefers-color-scheme: light)" content="rgb(32, 33, 34)" />
-	<meta name="theme-color" media="(prefers-color-scheme: dark)"  content="rgb(20, 20, 20)" />
+---
+---
+{% include head.html %}
 	<title>Pay Clock</title>
 	<meta name="author" content="Adam Crist" />
 	<meta name="description" content="Real-time hourly pay calculator" />
-	<link rel="stylesheet" href="/res/default.css" />
 	<style>
 		#fedDoll, #locDoll, #grsDoll, #wkrDoll {font-size: 130%;}
 		.outCell {
@@ -37,7 +29,7 @@
 		<tr><td><label for="locIn">Local Tax</label>  </td><td><input id="locIn" type="number" value="2.706" min="0" step="0.001" />%</td></tr>
 		<tr><td><label for="t0In">Start Time</label>  </td><td><input id="t0In" type="time" step="60" /> <input id="restart" type="button" value="Now" /></td></tr>
 	</table>
-	<footer>Copyright © 2022 Adam Crist. All rights reserved.</footer>
+{% include footer.html %}
 	<script>
 		function time() {return Date.now() / 1000;}
 		

@@ -1,39 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="UTF-8" />
-	<meta name="referrer" content="origin-when-cross-origin" />
-	<meta name="robots" content="index, follow, noarchive, nosnippet, noimageindex" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<meta name="color-scheme" content="light dark" />
-	<meta name="theme-color" media="(prefers-color-scheme: light)" content="rgb(32, 33, 34)" />
-	<meta name="theme-color" media="(prefers-color-scheme: dark)"  content="rgb(20, 20, 20)" />
-	<title>Geiger Detector</title>
-	<meta name="author" content="Adam Crist" />
-	<link rel="stylesheet" href="/res/default.css" />
-</head>
-<body>
-	<article>
-		<img src="external.jpg" />
-		<p>
-			This is an extremely simplified Geiger detector.
-			I built it mostly as an exercise to improve my understanding of electronics and Geiger counters.
-			It produces an audible click when an ionizing particle is detected by the Geiger-Müller tube.
-		</p>
-		
-		<img src="internal_hv.jpg" />
-		<p>
-			The J304 GM tube is driven by a modified flash from a disposable camera.
-			A string of Zener diodes limits the voltage.
-			A connector leading to the output board is soldered across the GM tube's cathode resistor.
-		</p>
-		
-		<img src="internal_amp.jpg" />
-		<p>
-			The signal from the GM tube is passed through an RC network before being amplified by a Darlington pair.
-			This amplified signal is fed to a transformer, which drives the piezo element.
-		</p>
-	</article>
-	<footer>Copyright © 2022 Adam Crist. All rights reserved.</footer>
-</body>
-</html>
+---
+layout: default
+title: Geiger Detector
+---
+<article>
+	<img src="external.jpg" />
+	<p>
+		This is an extremely simplified Geiger detector.
+		I built it mostly as an exercise to improve my understanding of electronics and Geiger counters.
+		It produces an audible click when an ionizing particle is detected by the Geiger-Müller tube.
+	</p>
+	
+	<img src="internal_hv.jpg" />
+	<p>
+		The J304 GM tube is driven by a modified flash from a disposable camera.
+		A string of Zener diodes limits the voltage.
+		A connector leading to the output board is soldered across the GM tube's cathode resistor.
+	</p>
+	
+	<img src="internal_amp.jpg" />
+	<p>
+		The signal from the GM tube is passed through an RC network before being amplified by a Darlington pair.
+		This amplified signal is fed to a transformer, which drives the piezo element.
+	</p>
+</article>
